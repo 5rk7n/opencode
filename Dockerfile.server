@@ -2,10 +2,10 @@ FROM ubuntu:latest
 
 ENV DEBIAN_FRONTEND=noninteractive
 
-ARG GITLAB_HOST="gitlab.com"
-ARG GITLAB_PORT="443"
-ENV GITLAB_HOST=${GITLAB_HOST}
-ENV GITLAB_PORT=${GITLAB_PORT}
+ARG GIT_HOST="github.com"
+ARG GIT_PORT="443"
+ENV GIT_HOST=${GIT_HOST}
+ENV GIT_PORT=${GIT_PORT}
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     wget \
@@ -45,7 +45,7 @@ RUN mkdir -p /home/opencode/.ssh \
              /home/opencode/.local/share/opencode \
              /home/opencode/.local/state/opencode \
              /home/opencode/.config/opencode \
-    && ssh-keyscan -p ${GITLAB_PORT} ${GITLAB_HOST} >> /home/opencode/.ssh/known_hosts
+    && ssh-keyscan -p ${GIT_PORT} ${GIT_HOST} >> /home/opencode/.ssh/known_hosts
 
 RUN npm install opencode-ai@latest && \
     npx bmad-method install --tools opencode --yes
