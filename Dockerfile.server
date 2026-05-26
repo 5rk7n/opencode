@@ -2,7 +2,7 @@ FROM ubuntu:latest
 
 ENV DEBIAN_FRONTEND=noninteractive
 
-ARG GIT_HOST="github.com"
+ARG GIT_HOST="gitlab.com"
 ARG GIT_PORT="443"
 ENV GIT_HOST=${GIT_HOST}
 ENV GIT_PORT=${GIT_PORT}
@@ -21,7 +21,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     npm \
     && rm -rf /var/lib/apt/lists/*
 
-RUN curl -fsSL https://packages.gitlab.com/install/repositories/gitlab/gitlab-穩定/script.deb.sh | bash \
+RUN curl -fsSL https://packages.gitlab.com/install/repositories/gitlab/gitlab-stable/script.deb.sh | bash \
     || curl -fsSL https://packages.gitlab.com/install/repositories/gitlab/gitlab-ce/script.deb.sh | bash \
     && apt-get update \
     && apt-get install -y glab \
