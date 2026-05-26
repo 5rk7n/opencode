@@ -1,0 +1,44 @@
+FROM ubuntu:latest
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    wget \
+    vim \
+    ca-certificates \
+    openssh-client \
+    curl \
+    unzip \
+    gnupg \
+    sudo \
+    git
+
+RUN curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | gpg --dearmor -o /usr/share/keyrings/githubcli-archive-keyring.gpg \
+    && echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | tee /etc/apt/sources.list.d/github-cli.list > /dev/null \
+    && apt-get update \
+    && apt-get install -y gh \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN usermod --home /home/workspace --move-home -aG sudo ubuntu \
+    && echo "ubuntu ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/ubuntu \
+    && chmod 0440 /etc/sudoers.d/ubuntu
+
+USER ubuntu
+
+ENV HOME=/home/workspace
+WORKDIR /home/workspace
+
+RUN mkdir -p /home/workspace/.ssh
+RUN ssh-keyscan github.com >> /home/workspace/.ssh/known_hosts
+
+RUN mkdir -p /home/workspace/.local/share/opencode
+  
+RUN mkdir -p /home/workspace/.config/opencode
+
+RUN curl -fsSL https://opencode.ai/install | bash
+
+ENV PATH="/home/workspace/.opencode/bin:${PATH}"
+
+EXPOSE 4096
+ENTRYPOINT ["opencode"]
+CMD ["serve", "--port", "4096", "--hostname", "0.0.0.0"]
