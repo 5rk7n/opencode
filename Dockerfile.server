@@ -1,43 +1,36 @@
-FROM ubuntu:latest
+FROM node:24.15.0-bookworm
 
-ENV DEBIAN_FRONTEND=noninteractive
+ARG OPENCODE_VERSION=latest
 
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    wget \
-    vim \
-    ca-certificates \
-    openssh-client \
-    curl \
-    unzip \
-    gnupg \
-    sudo \
-    git
+# set working directory
+WORKDIR /app
 
-RUN curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | gpg --dearmor -o /usr/share/keyrings/githubcli-archive-keyring.gpg \
-    && echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | tee /etc/apt/sources.list.d/github-cli.list > /dev/null \
-    && apt-get update \
-    && apt-get install -y gh \
-    && rm -rf /var/lib/apt/lists/*
+# check architecture
+RUN uname -m
 
-RUN usermod --home /home/workspace --move-home -aG sudo ubuntu \
-    && echo "ubuntu ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/ubuntu \
-    && chmod 0440 /etc/sudoers.d/ubuntu
+# install opencode globally
+RUN npm i -g "opencode-ai@${OPENCODE_VERSION}" && \
+  installed_version_raw="$(opencode --version)" && \
+  installed_version="${installed_version_raw#v}" && \
+  echo "Installed opencode version: ${installed_version}" && \
+  if [ "${OPENCODE_VERSION}" != "latest" ] && [ "${installed_version}" != "${OPENCODE_VERSION}" ]; then \
+    echo "Expected opencode version ${OPENCODE_VERSION}, got ${installed_version}" >&2; \
+    exit 1; \
+  fi
 
-USER ubuntu
+# non-root user (recommended)
+RUN adduser --disabled-password opencode
 
-ENV HOME=/home/workspace
-WORKDIR /home/workspace
+# create necessary directories and set permissions
+RUN mkdir -p /home/opencode/.local/share/opencode/ && \
+  mkdir -p /home/opencode/.local/state/opencode && \
+  mkdir -p /home/opencode/.config/opencode/ && \
+  chown -R opencode:opencode /home/opencode
 
-RUN mkdir -p /home/workspace/.ssh
-RUN ssh-keyscan github.com >> /home/workspace/.ssh/known_hosts
+# switch to non-root user
+USER opencode
 
-RUN mkdir -p /home/workspace/.local/share/opencode
-  
-RUN mkdir -p /home/workspace/.config/opencode
-
-RUN curl -fsSL https://opencode.ai/install | bash
-
-ENV PATH="/home/workspace/.opencode/bin:${PATH}"
+ENV PATH="/home/opencode/.opencode/bin:${PATH}"
 
 EXPOSE 4096
 ENTRYPOINT ["opencode"]
