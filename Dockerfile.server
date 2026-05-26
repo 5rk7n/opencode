@@ -19,7 +19,7 @@ RUN curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | g
     && apt-get install -y gh \
     && rm -rf /var/lib/apt/lists/*
 
-RUN usermod --home /home/opencode --move-home -aG sudo ubuntu \
+RUN usermod --home /home/ubuntu --move-home -aG sudo ubuntu \
     && echo "ubuntu ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/ubuntu \
     && chmod 0440 /etc/sudoers.d/ubuntu
 
