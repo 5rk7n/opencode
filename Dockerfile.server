@@ -2,6 +2,11 @@ FROM ubuntu:latest
 
 ENV DEBIAN_FRONTEND=noninteractive
 
+ARG GITLAB_HOST="gitlab.com"
+ARG GITLAB_PORT="443"
+ENV GITLAB_HOST=${GITLAB_HOST}
+ENV GITLAB_PORT=${GITLAB_PORT}
+
 RUN apt-get update && apt-get install -y --no-install-recommends \
     wget \
     vim \
@@ -11,34 +16,37 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     unzip \
     gnupg \
     sudo \
-    git
-
-RUN curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | gpg --dearmor -o /usr/share/keyrings/githubcli-archive-keyring.gpg \
-    && echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | tee /etc/apt/sources.list.d/github-cli.list > /dev/null \
-    && apt-get update \
-    && apt-get install -y gh \
+    git \
+    nodejs \
+    npm \
     && rm -rf /var/lib/apt/lists/*
 
-RUN usermod --home /home/ubuntu --move-home -aG sudo ubuntu \
-    && echo "ubuntu ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/ubuntu \
-    && chmod 0440 /etc/sudoers.d/ubuntu
+RUN curl -fsSL https://packages.gitlab.com/install/repositories/gitlab/gitlab-穩定/script.deb.sh | bash \
+    || curl -fsSL https://packages.gitlab.com/install/repositories/gitlab/gitlab-ce/script.deb.sh | bash \
+    && apt-get update \
+    && apt-get install -y glab \
+    && rm -rf /var/lib/apt/lists/*
 
-USER ubuntu
+RUN npm install -g opencode-ai@latest
 
-ENV HOME=/home/ubuntu
-WORKDIR /home/ubuntu
+RUN useradd -m -s /bin/bash -G sudo opencode \
+    && echo "opencode ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/opencode \
+    && chmod 0440 /etc/sudoers.d/opencode
 
-RUN mkdir -p /home/ubuntu/.ssh
-RUN ssh-keyscan github.com >> /home/ubuntu/.ssh/known_hosts
+USER opencode
+ENV HOME=/home/opencode
+WORKDIR /home/opencode
 
-RUN mkdir -p /home/ubuntu/.local/share/opencode
-RUN mkdir -p /home/ubuntu/.local/state/opencode  
-RUN mkdir -p /home/ubuntu/.config/opencode
+RUN mkdir -p /home/opencode/.ssh \
+             /home/opencode/.local/share/opencode \
+             /home/opencode/.local/state/opencode \
+             /home/opencode/.config/opencode \
+    && ssh-keyscan -p ${GITLAB_PORT} ${GITLAB_HOST} >> /home/opencode/.ssh/known_hosts
 
-RUN curl -fsSL https://opencode.ai/install | bash
-
-ENV PATH="/home/ubuntu/.opencode/bin:${PATH}"
+ENV PATH="/home/opencode/.opencode/bin:${PATH}"
+ENV NODE_NO_WARNINGS=1
 
 EXPOSE 4096
+
 ENTRYPOINT ["opencode"]
 CMD ["serve", "--port", "4096", "--hostname", "0.0.0.0"]
