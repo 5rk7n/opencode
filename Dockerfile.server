@@ -22,6 +22,8 @@ RUN apt-get update \
 
 RUN npm install -g opencode-ai@latest
 
+RUN npm install -g bmad-method
+
 RUN useradd -m -s /bin/bash -G sudo opencode \
     && echo "opencode ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/opencode \
     && chmod 0440 /etc/sudoers.d/opencode
