@@ -3,7 +3,7 @@ FROM ubuntu:latest
 ENV DEBIAN_FRONTEND=noninteractive
 
 ARG GIT_HOST="gitlab.com"
-ARG GIT_PORT="443"
+ARG GIT_PORT="22"
 ENV GIT_HOST=${GIT_HOST}
 ENV GIT_PORT=${GIT_PORT}
 
