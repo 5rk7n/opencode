@@ -46,6 +46,10 @@ jobs:
         uses: docker/metadata-action@v5
         with:
           images: ${{ env.REGISTRY }}/${{ env.OWNER }}/opencode-server
+          tags: |
+            type=ref,event=branch
+            type=ref,event=tag
+            type=raw,value=latest
 
       - name: Build and push Server Docker image
         uses: docker/build-push-action@v5
@@ -64,6 +68,10 @@ jobs:
         uses: docker/metadata-action@v5
         with:
           images: ${{ env.REGISTRY }}/${{ env.OWNER }}/opencode-web
+          tags: |
+            type=ref,event=branch
+            type=ref,event=tag
+            type=raw,value=latest
 
       - name: Build and push Web Docker image
         uses: docker/build-push-action@v5
