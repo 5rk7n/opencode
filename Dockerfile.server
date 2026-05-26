@@ -33,9 +33,6 @@ RUN curl -fsSL https://packages.gitlab.com/install/repositories/gitlab/gitlab-ç©
 RUN curl -LsSf https://astral.sh/uv/install.sh | sh && \
     mv /root/.local/bin/uv /usr/local/bin/uv
 
-RUN npm install -g opencode-ai@latest && \
-    npm install -g bmad-method@latest
-
 RUN useradd -m -s /bin/bash -G sudo opencode \
     && echo "opencode ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/opencode \
     && chmod 0440 /etc/sudoers.d/opencode
@@ -49,6 +46,9 @@ RUN mkdir -p /home/opencode/.ssh \
              /home/opencode/.local/state/opencode \
              /home/opencode/.config/opencode \
     && ssh-keyscan -p ${GITLAB_PORT} ${GITLAB_HOST} >> /home/opencode/.ssh/known_hosts
+
+RUN npm install opencode-ai@latest && \
+    npx bmad-method install --tools opencode --yes
 
 ENV PATH="/home/opencode/.opencode/bin:${PATH}"
 ENV NODE_NO_WARNINGS=1
