@@ -2,11 +2,6 @@ FROM ubuntu:latest
 
 ENV DEBIAN_FRONTEND=noninteractive
 
-ARG GIT_HOST="gitlab.com"
-ARG GIT_PORT="22"
-ENV GIT_HOST=${GIT_HOST}
-ENV GIT_PORT=${GIT_PORT}
-
 RUN apt-get update && apt-get install -y --no-install-recommends \
     wget \
     vim \
@@ -21,9 +16,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     npm \
     && rm -rf /var/lib/apt/lists/*
 
-RUN curl -fsSL https://packages.gitlab.com/install/repositories/gitlab/gitlab-stable/script.deb.sh | bash \
-    || curl -fsSL https://packages.gitlab.com/install/repositories/gitlab/gitlab-ce/script.deb.sh | bash \
-    && apt-get update \
+RUN apt-get update \
     && apt-get install -y glab \
     && rm -rf /var/lib/apt/lists/*
 
@@ -40,8 +33,7 @@ WORKDIR /home/opencode
 RUN mkdir -p /home/opencode/.ssh \
              /home/opencode/.local/share/opencode \
              /home/opencode/.local/state/opencode \
-             /home/opencode/.config/opencode \
-    && ssh-keyscan -p ${GIT_PORT} ${GIT_HOST} >> /home/opencode/.ssh/known_hosts
+             /home/opencode/.config/opencode 
 
 ENV PATH="/home/opencode/.opencode/bin:${PATH}"
 ENV NODE_NO_WARNINGS=1
