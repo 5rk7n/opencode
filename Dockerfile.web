@@ -11,34 +11,36 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     unzip \
     gnupg \
     sudo \
-    git
-
-RUN curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | gpg --dearmor -o /usr/share/keyrings/githubcli-archive-keyring.gpg \
-    && echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | tee /etc/apt/sources.list.d/github-cli.list > /dev/null \
-    && apt-get update \
-    && apt-get install -y gh \
+    git \
+    nodejs \
+    npm \
     && rm -rf /var/lib/apt/lists/*
 
-RUN usermod --home /home/workspace --move-home -aG sudo ubuntu \
-    && echo "ubuntu ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/ubuntu \
-    && chmod 0440 /etc/sudoers.d/ubuntu
+RUN apt-get update \
+    && apt-get install -y glab \
+    && rm -rf /var/lib/apt/lists/*
 
-USER ubuntu
+RUN npm install -g opencode-ai@latest
 
-ENV HOME=/home/workspace
-WORKDIR /home/workspace
+RUN npm install -g bmad-opencode-converter
 
-RUN mkdir -p /home/workspace/.ssh
-RUN ssh-keyscan github.com >> /home/workspace/.ssh/known_hosts
+RUN useradd -m -s /bin/bash -G sudo opencode \
+    && echo "opencode ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/opencode \
+    && chmod 0440 /etc/sudoers.d/opencode
 
-RUN mkdir -p /home/workspace/.local/share/opencode
-  
-RUN mkdir -p /home/workspace/.config/opencode
+USER opencode
+ENV HOME=/home/opencode
+WORKDIR /home/opencode
 
-RUN curl -fsSL https://opencode.ai/install | bash
+RUN mkdir -p /home/opencode/.ssh \
+             /home/opencode/.local/share/opencode \
+             /home/opencode/.local/state/opencode \
+             /home/opencode/.config/opencode 
 
-ENV PATH="/home/workspace/.opencode/bin:${PATH}"
+ENV PATH="/home/opencode/.opencode/bin:${PATH}"
+ENV NODE_NO_WARNINGS=1
 
 EXPOSE 4096
+
 ENTRYPOINT ["opencode"]
 CMD ["web", "--port", "4096", "--hostname", "0.0.0.0"]
