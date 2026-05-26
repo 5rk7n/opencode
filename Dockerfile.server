@@ -35,8 +35,6 @@ RUN mkdir -p /home/opencode/.ssh \
              /home/opencode/.local/state/opencode \
              /home/opencode/.config/opencode 
 
-RUN npm install @bmad/opencode-skills --save-dev
-
 ENV PATH="/home/opencode/.opencode/bin:${PATH}"
 ENV NODE_NO_WARNINGS=1
 
